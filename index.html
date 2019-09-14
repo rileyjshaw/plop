@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+		html, body, textarea {
+			height: 100%;
+			width: 100%;
+		}
+		body {
+			overflow: hidden;
+			background: #333;
+			margin: 0;
+			position: relative;
+			padding: 0 20px;
+		}
+		textarea, .ghost {
+			background: transparent;
+			border: 0;
+			padding: 0;
+			margin: 0;
+			word-break: keep-all;
+			overflow-wrap: normal;
+			white-space: pre;
+			font: 36px 'Fira Code', Menlo, Monaco, 'Courier New', monospace;
+			line-height: 80px;
+			color: #fff;
+		}
+		textarea {
+			outline: none;
+			resize: none;
+		}
+		.ghost {
+			position: absolute;
+			user-select: none;
+			visibility: hidden;
+		}
+	</style>
+</head>
+<body>
+	<div class="ghost"></div>
+	<textarea></textarea>
+	<script>
+		const constrain = (n, min, max) => Math.min(Math.max(n, min), max);
+		const {ipcRenderer} = require('electron');
+		const textarea = document.querySelector('textarea');
+		const ghost = document.querySelector('.ghost');
+
+		Object.entries(require('./lib.js')).forEach(([key, value]) => window[key] = value);
+
+		textarea.focus();
+		function resize() {
+			ghost.textContent = textarea.value.replace(/\n$/, '\n ');
+			let {width, height} = ghost.getBoundingClientRect();
+			[width, height] = [width, height].map(Math.round);
+			width = constrain(width + 40, 400, 1000);
+			height = constrain(height, 80, 640);
+			ipcRenderer.send('resize', width, height);
+		};
+		textarea.addEventListener('change', resize);
+		textarea.addEventListener('input', () => setTimeout(resize));
+		textarea.addEventListener('keydown', (e) => {
+			switch (e.key) {
+				case 'Enter':
+					if (e.shiftKey) return;
+					try {
+						const code = textarea.value;
+						const result = code && eval(code);
+						e.preventDefault();
+						textarea.value = '';
+						ipcRenderer.send('print', result);
+					} catch (e) {
+						// Flash red or something.
+					}
+					break;
+				case 'Esc':
+				case 'Escape':
+					ipcRenderer.send('hide');
+			};
+		});
+		resize();
+	</script>
+</body>
+</html>

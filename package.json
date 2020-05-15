@@ -10,9 +10,9 @@
   "author": "rileyjshaw <i@rileyjshaw.com> (http://rileyjshaw.com)",
   "license": "ISC",
   "dependencies": {
-    "menubar": "^6.0.7"
+    "menubar": "^8.0.2"
   },
   "devDependencies": {
-    "electron": "^6.0.9"
+    "electron": "^8.2.5"
   }
 }

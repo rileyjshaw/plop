@@ -2,6 +2,7 @@
 // https://shortexts.com
 // https://quickwords.co
 
+const path = require('path');
 const {promisify} = require('util');
 const {globalShortcut, ipcMain} = require('electron');
 const {exec} = require('child_process');
@@ -29,10 +30,13 @@ const mb = menubar({
 	windowPosition: 'center',
 	browserWindow: {
 		useContentSize: true,
-		webPreferences: {nodeIntegration: true},
+		webPreferences: {
+			preload: path.join(__dirname, 'preload.js'),
+		},
 	},
 	frame: false,
 	backgroundColor: '#333',
+	showDockIcon: false,
 });
 ipcMain.on('devtools', (event, open) => {
 	mb.window.webContents.openDevTools();
